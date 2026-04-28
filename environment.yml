@@ -1,4 +1,4 @@
-name: toy-mlip-reliability
+name: mlip-demo
 channels:
   - conda-forge
 dependencies:
