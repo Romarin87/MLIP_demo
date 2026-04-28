@@ -1,0 +1,25 @@
+# Local Python environments
+.venv/
+.venv_*/
+venv/
+env/
+.conda/
+
+# Python cache and build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Jupyter local state
+.ipynb_checkpoints/
+
+# OS/editor files
+.DS_Store
+.vscode/
+
+# Temporary executed notebooks or local scratch files
+*.executed.ipynb
+tmp/
+*.tmp
+assets/config_space_molecule_viewer.html

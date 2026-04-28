@@ -1,0 +1,12 @@
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+torch>=2.1
+plotly>=5.18
+py3Dmol>=2.0
+ipywidgets>=8.0
+anywidget>=0.9
+jupyterlab>=4.0
+notebook>=7.0
+nbconvert>=7.0
+ipykernel>=6.0
