@@ -23,3 +23,5 @@ __pycache__/
 tmp/
 *.tmp
 assets/config_space_molecule_viewer.html
+*.before_*.ipynb
+backups/

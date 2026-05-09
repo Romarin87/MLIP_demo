@@ -6,7 +6,7 @@
 
 ## 题目描述
 
-给定一个三维水分子 toy 势能面，本实战首先训练一个轻量神经网络势函数，并通过自动微分从能量得到原子力。随后，学生将检查模型是否满足能量旋转不变性和力旋转等变性，比较模型在 ID 与 OOD 构型上的误差，并利用多模型 committee disagreement / oracle selection 思路选择下一轮最值得补充标注的构型。通过这个 demo，学生将理解：可靠的 MLIP 不只是一个低测试误差的模型，而是物理约束、数据覆盖与主动学习闭环共同作用的结果。
+给定一个三维水分子 toy 势能面，本实战首先训练一个轻量神经网络势函数，并通过自动微分从能量得到原子力。随后，学生将检查模型是否满足能量旋转不变性和力旋转等变性，比较模型在 ID 与 OOD 构型上的误差，并利用多模型 committee disagreement 选择下一轮优先补充标注的构型。通过这个 demo，学生将理解：可靠的 MLIP 不只是一个低测试误差的模型，而是物理约束、数据覆盖与主动学习闭环共同作用的结果。
 
 ## 学习目标
 
@@ -27,9 +27,9 @@ MLIP_demo/
 └── outputs/
     ├── figures/              # 训练曲线、误差对比、主动学习结果图
     ├── config_space_molecule_viewer.html
-    │                         # 构型空间交互图：点击点查看分子结构
+    │                         # 旧版交互图预览文件
     └── high_error_ood_molecule_viewer.html
-                              # 高误差 OOD 构型交互图
+                              # 旧版高误差 OOD 交互图预览文件
 ```
 
 ## 环境依赖
@@ -128,7 +128,7 @@ jupyter notebook MLIP_demo.ipynb
 3. 选择刚创建的 Python 环境，例如 `mlip-demo` 或 `.venv`。
 4. 点击 `Run All` 从头运行 notebook。
 
-所有数据都会在 notebook 中自动生成，不依赖外部数据文件。运行过程中会训练两个 toy MLIP，并进行一次主动学习式数据回流：从 OOD 区域选择高误差构型加入训练集，然后从头训练新的 `InvariantFeatureNet`。
+所有数据都会在 notebook 中自动生成，不依赖外部数据文件。运行过程中会训练两个 toy MLIP，并进行一次主动学习式数据回流：用 committee disagreement 从 OOD pool 中选择不确定性较高的构型加入训练集，然后从头训练新的 `InvariantFeatureNet`。
 
 ## OOD 构型说明
 
@@ -141,12 +141,9 @@ notebook 中的 ID 数据是接近平衡水分子的构型。OOD 数据用于模
 
 ## 结果预览
 
-Notebook 运行过程中会把关键静态图保存到 `outputs/figures/`，并生成两个可直接用浏览器打开的交互式 HTML 页面。这样即使不运行 notebook，也可以先查看主要结果。
+Notebook 运行过程中会把关键静态图保存到 `outputs/figures/`，并在 notebook 内展示代表性水分子结构。这样即使不运行 notebook，也可以先查看主要静态结果。
 
-- `outputs/config_space_molecule_viewer.html`：完整构型空间交互图。点击 3D 散点中的任意构型，右侧会显示对应三维水分子的球棍结构。
-- `outputs/high_error_ood_molecule_viewer.html`：高误差 OOD 构型交互图。红色点是 force RMSE 最高的 OOD 构型，点击后可以查看对应分子结构。
-
-如果 3D 交互图第一次打开没有立刻显示分子结构，可以等待几秒，或点击任意一个数据点触发右侧分子渲染。
+`outputs/config_space_molecule_viewer.html` 和 `outputs/high_error_ood_molecule_viewer.html` 是旧版交互式预览文件；当前 notebook 主流程不再重新生成这两个 HTML。
 
 训练 loss 用来确认两个势函数是否正常收敛。这里的 loss 同时包含能量和力。
 
@@ -156,21 +153,17 @@ ID/OOD RMSE 对比展示模型在训练分布附近和训练分布之外的误�
 
 ![ID/OOD RMSE by model](outputs/figures/02_id_ood_rmse_by_model.png)
 
-坐标变换误差用于检查模型是否能正确处理平移和旋转后的同一个分子构型。
+对称性检查比较能量不变性和力旋转等变性，帮助发现模型表示是否违反基本物理约束。
 
-![Coordinate transform error](outputs/figures/03_coordinate_transform_error.png)
+![Symmetry error check](outputs/figures/03_symmetry_error_check.png)
 
-对称性检查进一步比较能量不变性和力旋转等变性，帮助发现模型表示是否违反基本物理约束。
+高误差 OOD 构型图把 force RMSE 最高的点放回构型空间中，便于观察它们是否落在训练数据覆盖不足的区域。
 
-![Symmetry error check](outputs/figures/04_symmetry_error_check.png)
+![High-error OOD locations](outputs/figures/04_high_error_ood_locations.png)
 
-高误差 OOD 构型图把模型最不可靠的点放回构型空间中，便于观察它们是否落在训练数据覆盖不足的区域。
+主动学习回流图比较按 committee disagreement 补充 OOD 标注前后的 force RMSE，用来说明数据回流对可靠性的影响。少量 OOD 点回流也可能牺牲部分 ID 区域精度，这是主动学习中需要持续监控的 trade-off。
 
-![High-error OOD locations](outputs/figures/05_high_error_ood_locations.png)
-
-主动学习回流图比较补充 OOD 标注前后的 force RMSE，用来说明数据回流对可靠性的影响。
-
-![Active-learning update](outputs/figures/06_active_learning_update.png)
+![Active-learning update](outputs/figures/05_active_learning_update.png)
 
 ## 交付文件
 
@@ -180,5 +173,5 @@ ID/OOD RMSE 对比展示模型在训练分布附近和训练分布之外的误�
 - `environment.yml`
 - `assets/3Dmol-min.js`
 - `outputs/figures/*.png`
-- `outputs/config_space_molecule_viewer.html`
-- `outputs/high_error_ood_molecule_viewer.html`
+- `outputs/config_space_molecule_viewer.html`（旧版预览）
+- `outputs/high_error_ood_molecule_viewer.html`（旧版预览）
